@@ -21,45 +21,46 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const getSession = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
+        console.log('[AuthContext] getSession - initial session:', session, 'Error:', error?.message);
         if (error) {
-          console.error('Error getting session:', error.message);
-          // setUser(null) could be redundant if session is null, but explicit
+          console.error('[AuthContext] Error getting initial session:', error.message);
         }
         setUser(session);
       } catch (e) {
-        console.error('Exception in getSession:', e instanceof Error ? e.message : String(e));
-        // setUser(null) might be appropriate here too
+        console.error('[AuthContext] Exception in getSession:', e instanceof Error ? e.message : String(e));
       } finally {
-        setLoading(false); // Ensure loading is set to false regardless of outcome
+        setLoading(false);
       }
     };
-
     getSession();
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log('[AuthContext] onAuthStateChange - event:', _event, 'session:', session);
       setUser(session);
-      // If an auth state change happens very quickly, ensure loading is false.
-      // Though getSession() should have handled initial load.
-      if (loading) {
+      if (loading && _event !== 'INITIAL_SESSION') { // INITIAL_SESSION is handled by getSession
         setLoading(false);
       }
     });
 
     return () => {
+      console.log('[AuthContext] Unsubscribing from onAuthStateChange.');
       listener?.subscription.unsubscribe();
     };
-  }, []); // Added 'loading' to dependency array due to its use in onAuthStateChange, though it's subtle.
-          // Reconsidering: 'loading' in the onAuthStateChange callback doesn't strictly require it in the dep array
-          // because it's checking the *current* state of loading, not establishing a closure over an old value
-          // that needs to re-run the effect. Let's remove it for now to keep it standard. The primary fix is the finally block.
+  }, []); // Keep dependency array empty for mount/unmount behavior
 
   const signInWithEmail = async (email: string, password: string) => {
+    console.log(`[AuthContext] Attempting signInWithEmail for ${email}`);
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        console.error('[AuthContext] Error in signInWithPassword:', error.message);
+        throw error; // Re-throw the error to be caught by LoginScreen
+      }
+      console.log('[AuthContext] signInWithPassword successful, session data:', data.session);
+      // setUser(data.session); // onAuthStateChange should handle this update
     } catch (error) {
-      console.error('Error signing in:', error);
-      // Consider re-throwing or returning error to UI
+      console.error('[AuthContext] signInWithEmail caught exception:', error);
+      throw error; // Re-throw to ensure LoginScreen catches it
     }
   };
 

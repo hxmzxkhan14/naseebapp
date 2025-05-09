@@ -8,27 +8,25 @@ import { AuthStackParamList } from '@/src/types/navigation';
 const LoginScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
   const { signInWithEmail } = useAuth();
   const navigation = useNavigation<NavigationProp<AuthStackParamList>>();
 
   const handleLogin = async () => {
     try {
+      setError(null);
       await signInWithEmail(email, password);
-      // After successful login, AuthProvider will update the user state,
-      // and App.tsx will automatically navigate to HomeScreen.
       console.log('[LoginScreen] Login attempt processed, awaiting auth state change.');
-    } catch (error) {
-      // signInWithEmail in AuthContext already logs errors.
-      // You might want to set an error state here to display to the user.
-      console.error('[LoginScreen] Error during login attempt:', error);
-      // TODO: Add state to show login error to user
+    } catch (err) {
+      console.error('[LoginScreen] Error during login attempt:', err);
+      setError(err instanceof Error ? err.message : 'An unknown error occurred');
     }
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Login</Text>
-      {/* TODO: Add error display here */}
+      {error && <Text style={styles.errorText}>{error}</Text>}
       <TextInput
         placeholder="Email"
         value={email}
@@ -58,6 +56,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: 'center', padding: 20 },
   title: { fontSize: 24, marginBottom: 20, textAlign: 'center' },
   input: { marginBottom: 10, padding: 8, borderWidth: 1, borderRadius: 5 },
+  errorText: { color: 'red', marginBottom: 10, textAlign: 'center' },
 });
 
 export default LoginScreen;
