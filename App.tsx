@@ -5,8 +5,9 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import LoginScreen from '@/app/(auth)/LoginScreen';
-import RegisterScreen from '@/app/(auth)/RegisterScreen';
 import HomeScreen from '@/app/(tabs)/HomeScreen';
+// import CollectNameScreen from '@/app/(auth)/sign-up/CollectNameScreen'; // No longer needed here
+import SignUpNavigator from '@/app/(auth)/sign-up/SignUpNavigator'; // Import the new navigator
 import { AuthStackParamList } from '@/src/types/navigation';
 import { useAuth } from '@/src/context/AuthContext';
 import { ActivityIndicator, View } from 'react-native';
@@ -34,7 +35,7 @@ function Navigation() {
       {!user ? (
         <>
           <Stack.Screen name="Login" component={LoginScreen} />
-          <Stack.Screen name="Register" component={RegisterScreen} />
+          <Stack.Screen name="RegisterFlow" component={SignUpNavigator} />
         </>
       ) : (
         <Stack.Screen name="Home" component={HomeScreen} />

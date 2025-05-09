@@ -45,7 +45,7 @@ const LoginScreen = () => {
       <Button title="Login" onPress={handleLogin} />
       <Button
         title="Go to Register"
-        onPress={() => navigation.navigate("Register")}
+        onPress={() => navigation.navigate("RegisterFlow")}
         color="#444"
       />
     </View>
