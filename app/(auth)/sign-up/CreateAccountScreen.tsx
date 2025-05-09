@@ -1,123 +1,162 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
+import React, { useState } from 'react';
+import {
+  View,
+  TextInput,
+  StyleSheet,
+  Alert,
+  ActivityIndicator,
+  TouchableOpacity,
+  Text,
+  KeyboardAvoidingView,
+  Platform
+} from 'react-native';
+// import { useRouter } from 'expo-router'; // No longer using Expo Router
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { RegistrationStackParamList, AuthStackParamList } from '@/src/types/navigation'; // Ensure AuthStackParamList is imported if navigating to Login
+import { RegistrationStackParamList, AuthStackParamList } from '@/src/types/navigation'; // Added AuthStackParamList
+import { useUserSignup } from '@/src/context/UserSignupContext';
 import { supabase } from '@/src/lib/supabase';
-import { useRegistration } from '@/src/context/RegistrationContext';
+import { ThemedView } from '@/components/ThemedView';
+import { ThemedText } from '@/components/ThemedText';
+import { authStyles } from '../authStyles';
 
-// Navigation prop for this screen, within the RegistrationStack
-// If navigating outside (e.g. to Login), composite navigation might be needed or careful type assertion.
+// Define the navigation prop types
 type CreateAccountScreenNavigationProp = StackNavigationProp<RegistrationStackParamList, 'CreateAccount'>;
-// For navigating to Login which is in AuthStack
+// For navigating to Login which is in AuthStack, if needed, though AuthProvider should handle it.
+// However, explicitly navigating after reset is cleaner.
 type AppNavigationProp = StackNavigationProp<AuthStackParamList>; 
 
-const CreateAccountScreen = () => {
+export default function CreateAccountScreen() {
   const navigation = useNavigation<CreateAccountScreenNavigationProp>();
-  const appNavigation = useNavigation<AppNavigationProp>();
-  const { registrationData, updateRegistrationData, resetRegistrationData } = useRegistration();
+  const appNavigation = useNavigation<AppNavigationProp>(); // For navigating to Login
+  const { signupData, resetSignupData, updateSignupData } = useUserSignup(); // Added resetSignupData and updateSignupData
+  const [email, setEmail] = useState(signupData.email || ''); // Prefer pre-fill if user went back and forth
+  const [password, setPassword] = useState(signupData.password || '');
+  const [loading, setLoading] = useState(false);
 
-  const [email, setEmail] = useState(registrationData.email || '');
-  const [password, setPassword] = useState(registrationData.password || '');
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    // Pre-fill if already in context (e.g., user went back and forth)
-    if (registrationData.email) setEmail(registrationData.email);
-    if (registrationData.password) setPassword(registrationData.password); // Less common to pre-fill password
-  }, [registrationData]);
-
-  const handleRegister = async () => {
-    setError(null);
-    if (!email.trim() || !password.trim()) {
-      Alert.alert('Validation Error', 'Email and password are required.');
+  const handleSignUp = async () => {
+    setLoading(true);
+    if (!email || !password) {
+      Alert.alert('Error', 'Email and password are required');
+      setLoading(false);
       return;
     }
-    updateRegistrationData({ email, password });
 
-    try {
-      console.log('[CreateAccountScreen] Attempting to sign up with:', { ...registrationData, email, password });
-      const { data: { user, session }, error: signUpError } = await supabase.auth.signUp({
-        email: email.trim(),
-        password: password, // Supabase handles password length requirements
-        options: {
-          data: { // Optional: pass other collected data to be stored in auth.users.user_metadata or public.users table if you have triggers
-            full_name: registrationData.name, // Example: ensure your Supabase table/metadata can handle this
-            phone: registrationData.phoneNumber,
-            birthday: registrationData.birthday,
-          },
+    const { name, phoneNumber, birthday } = signupData;
+    if (!name || !phoneNumber || !birthday) {
+        Alert.alert('Error', 'Missing registration data. Please go back and complete all steps.');
+        setLoading(false);
+        return;
+    }
+
+    const { data, error } = await supabase.auth.signUp({
+      email: email,
+      password: password,
+      options: {
+        data: {
+          full_name: name,
+          phone: phoneNumber,
+          birthday: birthday,
         },
-      });
+      },
+    });
 
-      if (signUpError) {
-        console.error('[CreateAccountScreen] Supabase signUp Error:', signUpError.message);
-        throw signUpError;
-      }
-      
-      console.log('[CreateAccountScreen] Registration successful. User:', user, 'Session:', session);
+    setLoading(false); // Set loading to false after the call, regardless of outcome
+
+    if (error) {
+      Alert.alert('Registration Error', error.message);
+      console.error('Supabase signUp error:', error);
+    } else if (data.user) {
       Alert.alert(
         'Registration Successful',
-        'Please check your email to confirm your account if email confirmation is enabled.',
-        [{ text: 'OK', onPress: () => {
-            resetRegistrationData(); // Clear registration form data
-            // AuthProvider will handle navigation to Home after successful sign-up and session update.
-            // Or, if email confirmation is required, user might stay on Login or a specific confirmation pending screen.
-            // For now, we assume AuthProvider takes over or user is directed to login.
-            appNavigation.navigate('Login'); // Navigate to Login after sign up
-        }}]
+        data.session ? 'You are now signed in!' : 'Please check your email to confirm your registration.',
+        [
+          { text: 'OK', onPress: () => {
+              resetSignupData(); 
+              // AuthProvider will handle redirect to Home if session exists.
+              // If no session (email confirm), redirect to Login so user isn't stuck.
+              if (!data.session) {
+                appNavigation.navigate('Login');
+              }
+            }
+          }
+        ]
       );
-
-    } catch (err) {
-      console.error('[CreateAccountScreen] HandleRegister Error:', err);
-      const message = err instanceof Error ? err.message : 'An unexpected error occurred during registration.';
-      setError(message);
-      Alert.alert('Registration Error', message);
+    } else {
+        Alert.alert('Registration Issue', 'An unknown issue occurred during registration.');
     }
   };
 
+  const handleBack = () => {
+    // Store current email/password in context in case user goes back then forward again
+    updateSignupData({ email, password }); 
+    navigation.goBack();
+  };
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Create your account</Text>
-      <Text style={styles.infoText}>Name: {registrationData.name}</Text>
-      <Text style={styles.infoText}>Phone: {registrationData.phoneNumber}</Text>
-      <Text style={styles.infoText}>Birthday: {registrationData.birthday}</Text>
-      
-      {error && <Text style={styles.errorText}>{error}</Text>}
-      <TextInput
-        placeholder="Email"
-        value={email}
-        onChangeText={(text) => {
-          setEmail(text);
-          updateRegistrationData({ email: text }); // Update context as user types
-        }}
-        style={styles.input}
-        autoCapitalize="none"
-        keyboardType="email-address"
-      />
-      <TextInput
-        placeholder="Password"
-        value={password}
-        onChangeText={(text) => {
-          setPassword(text);
-          updateRegistrationData({ password: text }); // Update context as user types
-        }}
-        secureTextEntry
-        style={styles.input}
-      />
-      <Button title="Complete Registration" onPress={handleRegister} />
-      <Button title="Back" onPress={() => navigation.goBack()} />
-      {/* Consider if navigating to Login directly from here is needed, or if it should be via AuthStack post-success */}
-      {/* <Button title="Go to Login" onPress={() => appNavigation.navigate('Login')} color="#444" /> */}
-    </View>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={{ flex: 1, backgroundColor: 'black' }} // backgroundColor to avoid white flashes
+    >
+      <ThemedView style={authStyles.container}> {/* justifyContent: space-between */}
+        {/* Main content area */}
+        <View style={styles.mainContent}>
+          <ThemedText type="title" style={[authStyles.title, styles.headerAlignment]}>Create Account</ThemedText>
+          <ThemedText style={[authStyles.subtitle, styles.subtitleAlignment]}>Enter your email and password.</ThemedText>
+
+          <TextInput
+            style={authStyles.input}
+            placeholder="Email"
+            value={email}
+            onChangeText={setEmail}
+            autoCapitalize="none"
+            keyboardType="email-address"
+            placeholderTextColor="#888"
+          />
+          <TextInput
+            style={authStyles.input}
+            placeholder="Password"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            placeholderTextColor="#888"
+          />
+        </View>
+
+        {/* Button group at the bottom */}
+        {/* Conditional rendering for loading indicator vs buttons */}
+        {loading ? (
+          <View style={authStyles.buttonGroup}> {/* Ensure loading indicator is also at bottom if needed */}
+            <ActivityIndicator size="large" color="#FFD700" />
+          </View>
+        ) : (
+          <View style={authStyles.buttonGroup}>
+            <TouchableOpacity style={authStyles.button} onPress={handleSignUp}>
+              <Text style={authStyles.buttonText}>Create Account</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={authStyles.secondaryButton} onPress={handleBack}>
+              <Text style={authStyles.secondaryButtonText}>Back</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </ThemedView>
+    </KeyboardAvoidingView>
   );
-};
+}
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', padding: 20, backgroundColor: '#fff' },
-  title: { fontSize: 24, marginBottom: 10, textAlign: 'center' },
-  infoText: { fontSize: 16, marginBottom: 5, textAlign: 'center', color: '#555' },
-  input: { borderWidth: 1, borderColor: '#ddd', padding: 10, marginBottom: 15, borderRadius: 5 },
-  errorText: { color: 'red', marginBottom: 10, textAlign: 'center' },
-});
-
-export default CreateAccountScreen; 
+  mainContent: {
+    flex: 1, // Take available space, allowing content to be centered or pushed up by KAV
+    justifyContent: 'center',
+  },
+  headerAlignment: {
+    textAlign: 'center',
+    marginTop: 0, // Override authStyles.title.marginTop
+    marginBottom: 10, // Space before subtitle
+  },
+  subtitleAlignment: {
+    textAlign: 'center',
+    alignSelf: 'center', // Ensure width: 80% from authStyles.subtitle works with textAlign:center
+    marginBottom: 30, // Space before inputs
+  }
+}); 

@@ -12,6 +12,7 @@ export interface RegistrationData {
 export type AuthStackParamList = {
   Login: undefined;
   // The Register route will now likely be a navigator for the multi-step flow
+  RegisterFlow: undefined; // This will navigate to the first step of registration
   Home: undefined;
 };
 

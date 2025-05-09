@@ -1,68 +1,50 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
-import { Platform } from 'react-native';
+import React, { useEffect } from 'react';
+import { Stack, useRouter, useSegments } from 'expo-router';
+import { useAuth } from '@/src/context/AuthContext';
+import { ActivityIndicator, View } from 'react-native';
+import { ThemeProvider, DarkTheme } from '@react-navigation/native'; // For theming if needed globally
 
-import { HapticTab } from '@/components/HapticTab';
-import TabBarBackground from '@/components/ui/TabBarBackground'
-import { Colors } from '@/constants/Colors'
-import { useColorScheme } from '@/hooks/useColorScheme';
-import { Ionicons } from '@expo/vector-icons';
+export default function RootLayout() {
+  const { user, loading } = useAuth();
+  const segments = useSegments();
+  const router = useRouter();
 
+  useEffect(() => {
+    if (loading) return; // Wait until loading is false
 
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
+    const inAuthGroup = segments[0] === '(auth)';
+    const inAppGroup = segments[0] === '(tabs)';
 
+    console.log('[RootLayout] Auth state check: User:', user ? user.user?.id : 'null', 'Loading:', loading, 'Segments:', segments.join('/'));
+
+    if (user && !inAppGroup) {
+      console.log('[RootLayout] User authenticated, navigating to (tabs)');
+      router.replace('/(tabs)/'); // Navigate to the tabs group
+    } else if (!user && !inAuthGroup) {
+      console.log('[RootLayout] User not authenticated, navigating to (auth)');
+      router.replace('/(auth)/'); // Navigate to the auth group, default screen (LoginScreen)
+    }
+  }, [user, loading, segments, router]);
+
+  if (loading) {
+    return (
+      <ThemeProvider value={DarkTheme}> {/* Ensure loading screen also has theme */}
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: DarkTheme.colors.background }}>
+          <ActivityIndicator size="large" color={DarkTheme.colors.primary} />
+        </View>
+      </ThemeProvider>
+    );
+  }
+
+  // This layout can be a simple Stack that delegates to group layouts
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: false,
-        tabBarButton: HapticTab,
-        tabBarBackground: TabBarBackground,
-        tabBarStyle: Platform.select({
-          ios: {
-            // Use a transparent background on iOS to show the blur effect
-            position: 'absolute',
-          },
-          default: {},
-        }),
-      }}>
-      <Tabs.Screen
-        name="HomeScreen"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home-outline" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="MessagesScreen"
-        options={{
-          title: 'Messages',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="chatbubble-outline" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="activity/index"
-        options={{
-          title: 'Activity',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person-outline" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="profile/index"
-        options={{
-          title: 'Profile',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="settings-outline" size={size} color={color} />
-          ),
-        }}
-      />
-    </Tabs>
+    <ThemeProvider value={DarkTheme}> {/* ThemeProvider can be here if not in App.tsx for Slot */}
+        <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="(auth)" />
+            <Stack.Screen name="(tabs)" />
+            {/* Example for a modal screen if you add one at root level later */}
+            {/* <Stack.Screen name="settingsModal" options={{ presentation: 'modal' }} /> */}
+        </Stack>
+    </ThemeProvider>
   );
 }
