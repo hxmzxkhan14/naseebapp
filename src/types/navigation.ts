@@ -11,15 +11,14 @@ export interface RegistrationData {
 
 export type AuthStackParamList = {
   Login: undefined;
-  // The Register route will now likely be a navigator for the multi-step flow
-  RegisterFlow: undefined; // This will navigate to the first step of registration
+  RegisterFlow: { screen?: keyof RegistrationStackParamList; params?: any } | undefined; // Updated to allow screen and params
   Home: undefined;
 };
 
 // Specific screens within the registration flow
 export type RegistrationStackParamList = {
   CollectName: undefined;
-  CollectPhoneNumber: undefined;
+  CollectPhoneNumber: undefined; // Could accept a pre-filled phone number from another flow
   CollectBirthday: undefined;
   CreateAccount: undefined; // This will be the final email/password screen
   // Add other steps here if needed

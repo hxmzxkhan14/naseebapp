@@ -9,6 +9,7 @@ import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import { authStyles } from './authStyles';
+import facebook from '@/assets/images/facebook.png'
 
 // Define the navigation prop type for this screen, assuming it's part of AuthStackParamList
 type LoginScreenNavigationProp = StackNavigationProp<AuthStackParamList, 'Login'>;
@@ -28,9 +29,9 @@ export default function LoginScreen() {
       </View>
 
       <View style={authStyles.buttonGroup}>
-        {/* Phone - Navigates to RegisterFlow, starts at CollectNameScreen */}
+        {/* Continue with Phone Button */}
         <Pressable
-          onPress={() => navigation.navigate('RegisterFlow')} 
+          onPress={() => navigation.navigate('RegisterFlow', { screen: 'CollectPhoneNumber' })} 
           style={({ pressed }) => [
             authStyles.button,
             { opacity: pressed ? 0.6 : 1 },
@@ -42,17 +43,17 @@ export default function LoginScreen() {
           </View>
         </Pressable>
 
-        {/* Sign up with Email Button - Navigates to RegisterFlow, starts at CollectNameScreen */}
+        {/* Create an Account Button (was Sign up with Email) */}
         <Pressable
-          onPress={() => navigation.navigate('RegisterFlow')} 
+          onPress={() => navigation.navigate('RegisterFlow')} // Starts RegisterFlow at CollectNameScreen
           style={({ pressed }) => [
             authStyles.button, 
             { opacity: pressed ? 0.6 : 1, marginTop: 10 }, 
           ]}
         >
           <View style={authStyles.oauthContent}> 
-            <Ionicons name="mail" size={20} color="black" style={authStyles.icon} />
-            <ThemedText style={authStyles.buttonText}>Sign up with Email</ThemedText>
+            <Ionicons name="create-outline" size={20} color="black" style={authStyles.icon} />
+            <ThemedText style={authStyles.buttonText}>Create an Account</ThemedText>
           </View>
         </Pressable>
 

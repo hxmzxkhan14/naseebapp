@@ -65,7 +65,7 @@ export default function CollectPhoneNumberScreen() { // Renamed component
             keyboardType="number-pad"
             maxLength={3}
             placeholder="XXX"
-            placeholderTextColor="#888"
+            placeholderTextColor="#c3bcba"
           />
           <Text style={styles.fixedText}>)</Text>
           <TextInput
@@ -76,7 +76,7 @@ export default function CollectPhoneNumberScreen() { // Renamed component
             keyboardType="number-pad"
             maxLength={3}
             placeholder="XXX"
-            placeholderTextColor="#888"
+            placeholderTextColor="#c3bcba"
           />
           <Text style={styles.fixedText}>-</Text>
           <TextInput
@@ -87,7 +87,7 @@ export default function CollectPhoneNumberScreen() { // Renamed component
             keyboardType="number-pad"
             maxLength={4}
             placeholder="XXXX"
-            placeholderTextColor="#888"
+            placeholderTextColor="#c3bcba"
           />
         </View>
       </View>
