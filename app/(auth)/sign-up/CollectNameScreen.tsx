@@ -7,7 +7,7 @@ import { RegistrationStackParamList, RegistrationData } from '@/src/types/naviga
 import { useUserSignup } from '@/src/context/UserSignupContext';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
-import { authStyles } from '../authStyles';
+import { authStyles } from '@/app/(auth)/authStyles';
 
 // Define the navigation prop type for this screen
 type CollectNameScreenNavigationProp = StackNavigationProp<RegistrationStackParamList, 'CollectName'>;

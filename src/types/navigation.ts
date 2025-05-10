@@ -12,7 +12,7 @@ export interface RegistrationData {
 export type AuthStackParamList = {
   Login: undefined;
   RegisterFlow: { screen?: keyof RegistrationStackParamList; params?: any } | undefined; // Updated to allow screen and params
-  Home: undefined;
+  Home: { screen?: keyof LoggedInScreen; params?: any } | undefined;
 };
 
 // Specific screens within the registration flow
@@ -23,4 +23,10 @@ export type RegistrationStackParamList = {
   CreateAccount: undefined; // This will be the final email/password screen
   // Add other steps here if needed
 };
-  
+
+export type LoggedInScreen = {
+  Home: undefined;
+  Messages: undefined;
+  Activity: undefined;
+  Profile: undefined;
+}; 

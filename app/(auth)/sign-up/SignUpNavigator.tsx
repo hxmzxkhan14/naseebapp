@@ -4,10 +4,10 @@ import { UserSignupProvider } from '@/src/context/UserSignupContext';
 import { RegistrationStackParamList } from '@/src/types/navigation'; // Assuming this type defines the screen names
 
 // Import screen components using their restored original filenames
-import CollectNameScreen from './CollectNameScreen'; 
-import CollectPhoneNumberScreen from './CollectPhoneNumberScreen'; 
-import CollectBirthdayScreen from './CollectBirthdayScreen'; 
-import CreateAccountScreen from './CreateAccountScreen'; 
+import CollectNameScreen from '@/app/(auth)/sign-up/CollectNameScreen'; 
+import CollectPhoneNumberScreen from '@/app/(auth)/sign-up/CollectPhoneNumberScreen'; 
+import CollectBirthdayScreen from '@/app/(auth)/sign-up/CollectBirthdayScreen'; 
+import CreateAccountScreen from '@/app/(auth)/sign-up/CreateAccountScreen'; 
 
 const Stack = createStackNavigator<RegistrationStackParamList>();
 

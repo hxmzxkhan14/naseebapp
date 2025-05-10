@@ -8,7 +8,7 @@ import { RegistrationStackParamList } from '@/src/types/navigation';
 import { useUserSignup } from '@/src/context/UserSignupContext';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
-import { authStyles } from '../authStyles';
+import { authStyles } from '@/app/(auth)/authStyles';
 
 // Define the navigation prop type
 type CollectPhoneNumberScreenNavigationProp = StackNavigationProp<RegistrationStackParamList, 'CollectPhoneNumber'>;

@@ -8,14 +8,30 @@ import { AuthStackParamList } from '@/src/types/navigation'; // For typing the n
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
-import { authStyles } from './authStyles';
-import facebook from '@/assets/images/facebook.png'
+import { authStyles } from '@/app/(auth)/authStyles';
+import { supabase } from '@/src/lib/supabase';
+import { GoogleSignin, GoogleSigninButton, statusCodes } from 'react-native-google-signin';
+import HomeScreen from '../(tabs)/HomeScreen';
+import TabsNavigator from '../(tabs)/TabsNavigator';
 
 // Define the navigation prop type for this screen, assuming it's part of AuthStackParamList
 type LoginScreenNavigationProp = StackNavigationProp<AuthStackParamList, 'Login'>;
 
 export default function LoginScreen() {
   const navigation = useNavigation<LoginScreenNavigationProp>(); // Use @react-navigation
+  const handleGoogleLogin = async () => {
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+      });
+      if (error) throw error;
+
+      // navigate to main app
+      if (data) navigation.reset({ index: 0, routes: [{name: TabsNavigator }]});
+    } catch (error) {
+      console.error('Login error')
+    }
+  }
 
   return (
     <ThemedView style={authStyles.container}>
@@ -59,7 +75,7 @@ export default function LoginScreen() {
 
         {/* Google */}
         <Pressable
-          onPress={() => console.log('Google OAuth button pressed')} // Placeholder
+          onPress={handleGoogleLogin} // Placeholder
           style={({ pressed }) => [
             authStyles.oauthButton,
             { opacity: pressed ? 0.6 : 1 },

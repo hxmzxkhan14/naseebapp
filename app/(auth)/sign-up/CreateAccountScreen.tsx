@@ -132,7 +132,9 @@ export default function CreateAccountScreen() {
         ) : (
           <View style={authStyles.buttonGroup}>
             <TouchableOpacity style={authStyles.button} onPress={handleSignUp}>
+            <a href="@/app/(tabs)/HomeScreen">
               <Text style={authStyles.buttonText}>Create Account</Text>
+            </a>
             </TouchableOpacity>
             <TouchableOpacity style={authStyles.secondaryButton} onPress={handleBack}>
               <Text style={authStyles.secondaryButtonText}>Back</Text>

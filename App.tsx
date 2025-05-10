@@ -5,8 +5,8 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import LoginScreen from '@/app/(auth)/LoginScreen';
-import HomeScreen from '@/app/(tabs)/HomeScreen';
 import SignUpNavigator from '@/app/(auth)/sign-up/SignUpNavigator';
+import TabsNavigator from '@/app/(tabs)/TabsNavigator'
 import { AuthStackParamList } from '@/src/types/navigation';
 import { useAuth } from '@/src/context/AuthContext';
 import { ActivityIndicator, View } from 'react-native';
@@ -29,7 +29,7 @@ function Navigation() {
   console.log('[App.tsx] Navigation: loading is false, user ID:', user ? user.user?.id : 'null', '(Restored State)');
   return (
     <Stack.Navigator
-      initialRouteName={user ? "Home" : "Login"}
+      initialRouteName={user ? "Main" : "Login"}
       screenOptions={{ headerShown: false }}>
       {!user ? (
         <>
@@ -37,7 +37,7 @@ function Navigation() {
           <Stack.Screen name="RegisterFlow" component={SignUpNavigator} />
         </>
       ) : (
-        <Stack.Screen name="Home" component={HomeScreen} />
+        <Stack.Screen name="Main" component={TabsNavigator} />
       )}
     </Stack.Navigator>
   );

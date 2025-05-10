@@ -26,7 +26,7 @@ export default function TabLayout() {
         }),
       }}>
       <Tabs.Screen
-        name="HomeScreen" // This should match a file like app/(tabs)/HomeScreen.tsx
+        name="HomeScreen/index" // This should match a file like app/(tabs)/HomeScreen.tsx
         options={{
           title: 'Home',
           tabBarIcon: ({ color, size }) => (
@@ -35,7 +35,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="MessagesScreen" // This should match a file like app/(tabs)/MessagesScreen.tsx
+        name="MessagesScreen/index" // This should match a file like app/(tabs)/MessagesScreen.tsx
         options={{
           title: 'Messages',
           tabBarIcon: ({ color, size }) => (
@@ -43,17 +43,19 @@ export default function TabLayout() {
           ),
         }}
       />
-      {/* <Tabs.Screen
-        name="activity" // No app/(tabs)/activity.tsx or app/(tabs)/activity/index.tsx yet
+      {
+      <Tabs.Screen
+        name="ActivityScreen/index" // No app/(tabs)/activity.tsx or app/(tabs)/activity/index.tsx yet
         options={{
           title: 'Activity',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="person-outline" size={size} color={color} />
           ),
         }}
-      /> */}
+      />
+      }
       <Tabs.Screen
-        name="ProfileScreen" // Corrected name to match ProfileScreen.tsx
+        name="ProfileScreen/index" // Corrected name to match ProfileScreen.tsx
         options={{
           title: 'Profile',
           tabBarIcon: ({ color, size }) => (
