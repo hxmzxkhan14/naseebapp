@@ -14,31 +14,31 @@ export default function HelpSupportScreen() {
       icon: 'person-add-outline',
       title: 'Getting Started',
       subtitle: 'Learn how to create your profile and start matching',
-      onPress: () => Alert.alert('Getting Started', 'Learn the basics of creating your profile, uploading photos, and setting your preferences to start finding meaningful connections.'),
+      onPress: () => router.push('/settings/help-support/getting-started'),
     },
     {
       icon: 'heart-outline',
       title: 'Matching & Messaging',
       subtitle: 'How to like, match, and chat with others',
-      onPress: () => Alert.alert('Matching & Messaging', 'Discover how to like profiles, understand matching algorithms, and start meaningful conversations with your matches.'),
+      onPress: () => router.push('/settings/help-support/matching-messaging'),
     },
     {
       icon: 'shield-outline',
       title: 'Safety & Privacy',
       subtitle: 'Stay safe while using the app',
-      onPress: () => Alert.alert('Safety & Privacy', 'Learn about our safety features, privacy controls, and best practices for staying safe while dating online.'),
+      onPress: () => router.push('/settings/help-support/safety-privacy'),
     },
     {
       icon: 'card-outline',
       title: 'Premium Features',
       subtitle: 'Unlock advanced features with premium',
-      onPress: () => Alert.alert('Premium Features', 'Explore premium features like unlimited likes, rewinds, and advanced filters to enhance your dating experience.'),
+      onPress: () => router.push('/settings/help-support/premium-features'),
     },
     {
       icon: 'settings-outline',
       title: 'Account Settings',
       subtitle: 'Manage your account and preferences',
-      onPress: () => Alert.alert('Account Settings', 'Learn how to update your profile, change settings, and manage your account preferences.'),
+      onPress: () => router.push('/settings/account-settings'),
     },
   ];
 
@@ -53,7 +53,7 @@ export default function HelpSupportScreen() {
       icon: 'document-text-outline',
       title: 'FAQ',
       subtitle: 'Frequently asked questions',
-      onPress: () => Alert.alert('FAQ', 'Browse our comprehensive FAQ section to find answers to common questions about using Naseeb.'),
+      onPress: () => router.push('/settings/help-support/faq'),
     },
     {
       icon: 'bug-outline',

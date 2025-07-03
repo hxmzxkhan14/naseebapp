@@ -53,19 +53,19 @@ export default function PrivacySecurityScreen() {
       icon: 'lock-closed-outline',
       title: 'Two-Factor Authentication',
       subtitle: 'Add an extra layer of security',
-      onPress: () => Alert.alert('Coming Soon', 'Two-factor authentication will be available soon!'),
+      onPress: () => router.push('/settings/privacy-security/two-factor-auth'),
     },
     {
       icon: 'shield-outline',
       title: 'Blocked Users',
       subtitle: 'Manage your blocked users list',
-      onPress: () => Alert.alert('Coming Soon', 'Blocked users management will be available soon!'),
+      onPress: () => router.push('/settings/privacy-security/blocked-users'),
     },
     {
       icon: 'notifications-off-outline',
       title: 'Report & Safety',
       subtitle: 'Report issues and get help',
-      onPress: () => Alert.alert('Coming Soon', 'Report and safety features will be available soon!'),
+      onPress: () => router.push('/settings/privacy-security/report-safety'),
     },
   ];
 
