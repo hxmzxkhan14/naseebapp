@@ -15,6 +15,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Card } from '@/components/ui';
 import { useTheme } from '@/contexts/ThemeContext';
+import RNHTMLtoPDF from 'react-native-html-to-pdf';
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
 
 // Mock profile data - in a real app, this would come from an API
 const mockProfiles = [
@@ -437,6 +440,443 @@ export default function ProfileDetailScreen() {
     router.push('/messages');
   };
 
+  const generateProfileHTML = () => {
+    const formatArray = (arr: string[]) => arr.join(', ');
+    
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>${profile.name}'s Profile</title>
+        <style>
+          body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f8f9fa;
+            color: #333;
+          }
+          .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          }
+          .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+          }
+          .profile-image-placeholder {
+            width: 120px;
+            height: 120px;
+            border-radius: 60px;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 4px solid white;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          }
+          .profile-image-text {
+            font-size: 48px;
+            font-weight: bold;
+            color: white;
+          }
+          .profile-name {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 8px;
+          }
+          .profile-location {
+            font-size: 18px;
+            opacity: 0.9;
+            margin-bottom: 16px;
+          }
+          .profile-bio {
+            font-size: 16px;
+            line-height: 1.6;
+            opacity: 0.95;
+          }
+          .content {
+            padding: 30px;
+          }
+          .section {
+            margin-bottom: 30px;
+          }
+          .section-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #3498db;
+          }
+          .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+          }
+          .info-item {
+            background: #f8f9fa;
+            padding: 16px;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+          }
+          .info-label {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 4px;
+            font-size: 14px;
+          }
+          .info-value {
+            color: #555;
+            font-size: 16px;
+          }
+          .full-width {
+            grid-column: 1 / -1;
+          }
+          .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+          }
+          .tag {
+            background: #3498db;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 500;
+          }
+          .footer {
+            background: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            font-size: 14px;
+          }
+          .generated-date {
+            color: #bdc3c7;
+            margin-top: 8px;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <div class="profile-image-placeholder">
+              <div class="profile-image-text">${profile.name.charAt(0).toUpperCase()}</div>
+            </div>
+            <div class="profile-name">${profile.name}, ${profile.age}</div>
+            <div class="profile-location">${formatLocation(profile.detailedLocation)}</div>
+            <div class="profile-bio">${profile.bio}</div>
+          </div>
+          
+          <div class="content">
+            <div class="section">
+              <div class="section-title">About Me</div>
+              <div class="info-grid">
+                <div class="info-item">
+                  <div class="info-label">Height</div>
+                  <div class="info-value">${profile.height} cm</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-label">Marital Status</div>
+                  <div class="info-value">${formatMaritalStatus(profile.maritalStatus)}</div>
+                </div>
+                ${profile.hasKids ? `
+                <div class="info-item">
+                  <div class="info-label">Children</div>
+                  <div class="info-value">Yes</div>
+                </div>
+                ` : ''}
+              </div>
+            </div>
+
+            <div class="section">
+              <div class="section-title">Marriage Goals</div>
+              <div class="info-grid">
+                <div class="info-item">
+                  <div class="info-label">Marriage Timeline</div>
+                  <div class="info-value">${profile.marriageTimeline}</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-label">Open to Relocate</div>
+                  <div class="info-value">${profile.openToRelocate ? 'Yes' : 'No'}</div>
+                </div>
+                <div class="info-item full-width">
+                  <div class="info-label">Living Plans</div>
+                  <div class="info-value">${profile.livingPlans}</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="section">
+              <div class="section-title">Personal</div>
+              <div class="info-grid">
+                <div class="info-item">
+                  <div class="info-label">Family Type</div>
+                  <div class="info-value">${formatFamilyType(profile.familyType)}</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-label">Current Household</div>
+                  <div class="info-value">${profile.household}</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-label">Living Situation</div>
+                  <div class="info-value">${profile.currentLiving}</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-label">Fitness</div>
+                  <div class="info-value">${profile.fitness ? 'Yes' : 'No'}</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-label">Smoking</div>
+                  <div class="info-value">${profile.smoking ? 'Yes' : 'No'}</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-label">Drinking</div>
+                  <div class="info-value">${profile.drinking ? 'Yes' : 'No'}</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="section">
+              <div class="section-title">Interests</div>
+              <div class="info-item full-width">
+                <div class="info-label">Hobbies</div>
+                <div class="tags">
+                  ${profile.hobbies.map(hobby => `<span class="tag">${hobby}</span>`).join('')}
+                </div>
+              </div>
+              <div class="info-item full-width">
+                <div class="info-label">Personality Traits</div>
+                <div class="tags">
+                  ${profile.personalityTraits.map(trait => `<span class="tag">${trait}</span>`).join('')}
+                </div>
+              </div>
+              <div class="info-item full-width">
+                <div class="info-label">Icebreakers</div>
+                <div class="info-value">
+                  ${profile.icebreakers.map((icebreaker, index) => `${index + 1}. ${icebreaker}`).join('<br>')}
+                </div>
+              </div>
+            </div>
+
+            <div class="section">
+              <div class="section-title">Education & Career</div>
+              <div class="info-grid">
+                <div class="info-item">
+                  <div class="info-label">Education</div>
+                  <div class="info-value">${profile.education}</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-label">Profession</div>
+                  <div class="info-value">${profile.profession}</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-label">Job Title</div>
+                  <div class="info-value">${profile.jobTitle}</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="section">
+              <div class="section-title">Deen</div>
+              <div class="info-grid">
+                <div class="info-item">
+                  <div class="info-label">Religion</div>
+                  <div class="info-value">${profile.religion}</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-label">Sect</div>
+                  <div class="info-value">${profile.sect}</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-label">Prayer Level</div>
+                  <div class="info-value">${formatPrayerLevel(profile.prayerLevel)}</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-label">Hijab/Beard</div>
+                  <div class="info-value">${formatHijabBeard(profile.hijabBeard)}</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-label">Religious Level</div>
+                  <div class="info-value">${profile.religiousLevel}</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="section">
+              <div class="section-title">Languages & Ethnicity</div>
+              <div class="info-grid">
+                <div class="info-item">
+                  <div class="info-label">Ethnicity</div>
+                  <div class="info-value">${formatArray(profile.ethnicity)}</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-label">Languages</div>
+                  <div class="info-value">${formatArray(profile.languages)}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="footer">
+            <div>Generated from Naseeb - Islamic Dating App</div>
+            <div class="generated-date">Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+  };
+
+  const generateProfileText = () => {
+    const formatArray = (arr: string[]) => arr.join(', ');
+    
+    return `
+${profile.name.toUpperCase()}'S PROFILE
+${'='.repeat(50)}
+
+BASIC INFORMATION
+${'-'.repeat(20)}
+Name: ${profile.name}
+Age: ${profile.age}
+Height: ${profile.height} cm
+Location: ${formatLocation(profile.detailedLocation)}
+Bio: ${profile.bio}
+
+MARITAL STATUS
+${'-'.repeat(20)}
+Status: ${formatMaritalStatus(profile.maritalStatus)}
+${profile.hasKids ? 'Children: Yes' : 'Children: No'}
+
+MARRIAGE GOALS
+${'-'.repeat(20)}
+Timeline: ${profile.marriageTimeline}
+Open to Relocate: ${profile.openToRelocate ? 'Yes' : 'No'}
+Living Plans: ${profile.livingPlans}
+
+PERSONAL DETAILS
+${'-'.repeat(20)}
+Family Type: ${formatFamilyType(profile.familyType)}
+Current Household: ${profile.household}
+Living Situation: ${profile.currentLiving}
+Fitness: ${profile.fitness ? 'Yes' : 'No'}
+Smoking: ${profile.smoking ? 'Yes' : 'No'}
+Drinking: ${profile.drinking ? 'Yes' : 'No'}
+
+INTERESTS & PERSONALITY
+${'-'.repeat(20)}
+Hobbies: ${formatArray(profile.hobbies)}
+Personality Traits: ${formatArray(profile.personalityTraits)}
+
+Icebreakers:
+${profile.icebreakers.map((icebreaker, index) => `${index + 1}. ${icebreaker}`).join('\n')}
+
+EDUCATION & CAREER
+${'-'.repeat(20)}
+Education: ${profile.education}
+Profession: ${profile.profession}
+Job Title: ${profile.jobTitle}
+
+DEEN (RELIGIOUS PRACTICES)
+${'-'.repeat(20)}
+Religion: ${profile.religion}
+Sect: ${profile.sect}
+Prayer Level: ${formatPrayerLevel(profile.prayerLevel)}
+Hijab/Beard: ${formatHijabBeard(profile.hijabBeard)}
+Religious Level: ${profile.religiousLevel}
+
+LANGUAGES & ETHNICITY
+${'-'.repeat(20)}
+Ethnicity: ${formatArray(profile.ethnicity)}
+Languages: ${formatArray(profile.languages)}
+
+${'='.repeat(50)}
+Generated from Naseeb - Islamic Dating App
+Generated on: ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}
+${'='.repeat(50)}
+    `.trim();
+  };
+
+  const handleExportPDF = async () => {
+    console.log('Export button clicked!'); // Debug log
+    
+    try {
+      // Simple direct download without confirmation for testing
+      const profileText = generateProfileText();
+      console.log('Profile text generated:', profileText.substring(0, 100) + '...'); // Debug log
+      
+      // Check if we're in a web environment
+      if (typeof window !== 'undefined') {
+        console.log('Running in web environment'); // Debug log
+        
+        // Create and download text file
+        const blob = new Blob([profileText], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${profile.name}_Profile_${Date.now()}.txt`;
+        link.style.display = 'none';
+        
+        console.log('About to trigger download...'); // Debug log
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        
+        console.log('Download should have started'); // Debug log
+        
+        Alert.alert(
+          'Profile Exported Successfully!',
+          `${profile.name}'s profile has been downloaded as a text file.`,
+          [{ text: 'OK' }]
+        );
+      } else {
+        console.log('Running in native environment'); // Debug log
+        
+        // Native mobile app - save as text file
+        const fileName = `${profile.name}_Profile_${Date.now()}.txt`;
+        const filePath = `${FileSystem.documentDirectory}${fileName}`;
+        
+        await FileSystem.writeAsStringAsync(filePath, profileText);
+        
+        Alert.alert(
+          'Profile Exported Successfully!',
+          `Profile saved as: ${fileName}`,
+          [
+            { text: 'OK' },
+            {
+              text: 'Share',
+              onPress: async () => {
+                try {
+                  await Sharing.shareAsync(filePath, {
+                    mimeType: 'text/plain',
+                    dialogTitle: `Share ${profile.name}'s Profile`,
+                  });
+                } catch (error) {
+                  Alert.alert('Error', 'Failed to share profile');
+                }
+              }
+            }
+          ]
+        );
+      }
+    } catch (error) {
+      console.error('Export error:', error);
+      Alert.alert('Error', `Failed to export profile: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  };
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: currentTheme.colors.background }]}>
       <View style={[styles.header, { backgroundColor: currentTheme.colors.surface }]}>
@@ -445,7 +885,32 @@ export default function ProfileDetailScreen() {
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: currentTheme.colors.text }]}>Profile</Text>
         <View style={styles.headerRight}>
-          <TouchableOpacity style={styles.actionButton}>
+          <TouchableOpacity 
+            style={styles.actionButton} 
+            onPress={() => {
+              console.log('Download button pressed!'); // Debug log
+              handleExportPDF();
+            }}
+          >
+            <Ionicons name="download-outline" size={24} color={currentTheme.colors.primary} />
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.actionButton}
+            onPress={() => {
+              // Simple test download
+              const testText = 'This is a test file from Naseeb app!';
+              const blob = new Blob([testText], { type: 'text/plain' });
+              const url = URL.createObjectURL(blob);
+              const link = document.createElement('a');
+              link.href = url;
+              link.download = 'test.txt';
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+              URL.revokeObjectURL(url);
+              Alert.alert('Test', 'Test file downloaded!');
+            }}
+          >
             <Ionicons name="heart-outline" size={24} color={currentTheme.colors.primary} />
           </TouchableOpacity>
         </View>
@@ -744,6 +1209,7 @@ const styles = StyleSheet.create({
   headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 8,
   },
   actionButton: {
     padding: 8,

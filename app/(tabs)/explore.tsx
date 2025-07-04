@@ -21,7 +21,7 @@ import Animated, {
   Extrapolate,
 } from 'react-native-reanimated';
 import { PanGestureHandler, PanGestureHandlerGestureEvent } from 'react-native-gesture-handler';
-import { useTheme } from '@/contexts/ThemeContext';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 const CARD_WIDTH = screenWidth;
@@ -197,7 +197,7 @@ const mockProfiles = [
     bio: 'Creative soul who loves to paint and dance 🎨',
     location: 'Miami, FL',
     interests: ['Art', 'Dance', 'Beach'],
-    image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400',
+    image: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400',
     // Additional detailed profile data
     height: '168',
     detailedLocation: {
@@ -207,26 +207,26 @@ const mockProfiles = [
     },
     maritalStatus: 'single',
     hasKids: false,
-    marriageTimeline: 'Within 2 years',
-    openToRelocate: false,
-    livingPlans: 'Apartment near family',
-    familyType: 'extended',
-    household: 'Live with family',
-    currentLiving: 'Family',
+    marriageTimeline: 'Within 1-2 years',
+    openToRelocate: true,
+    livingPlans: 'Apartment',
+    familyType: 'nuclear',
+    household: 'Live alone',
+    currentLiving: 'Alone',
     fitness: true,
     smoking: false,
     drinking: false,
-    hobbies: ['Art', 'Dance', 'Beach', 'Photography', 'Yoga'],
-    personalityTraits: ['Creative', 'Extrovert', 'Optimistic', 'Spontaneous'],
+    hobbies: ['Art', 'Dance', 'Beach', 'Photography', 'Travel'],
+    personalityTraits: ['Creative', 'Extrovert', 'Spontaneous', 'Artistic'],
     icebreakers: ['What\'s your favorite art style?', 'Do you enjoy dancing?'],
     education: 'Bachelor\'s in Fine Arts',
-    profession: 'Arts',
-    jobTitle: 'Art Teacher',
+    profession: 'Creative',
+    jobTitle: 'Graphic Designer',
     religion: 'Islam',
     sect: 'Sunni',
-    prayerLevel: 'always',
-    hijabBeard: 'yes',
-    religiousLevel: 'Practicing',
+    prayerLevel: 'sometimes',
+    hijabBeard: 'sometimes',
+    religiousLevel: 'Moderate',
     ethnicity: ['Moroccan'],
     languages: ['Arabic', 'English', 'French'],
   },
@@ -237,10 +237,9 @@ interface ProfileCardProps {
   isTop: boolean;
   onSwipe: (direction: 'left' | 'right') => void;
   onPress: () => void;
-  currentTheme: any;
 }
 
-const ProfileCard: React.FC<ProfileCardProps> = ({ profile, isTop, onSwipe, onPress, currentTheme }) => {
+const ProfileCard: React.FC<ProfileCardProps> = ({ profile, isTop, onSwipe, onPress }) => {
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
   const scale = useSharedValue(isTop ? 1 : 0.95);
@@ -290,6 +289,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ profile, isTop, onSwipe, onPr
         { scale: scale.value },
         { rotate: `${rotate.value}deg` },
       ],
+      zIndex: isTop ? 3 : 2,
     };
   });
 
@@ -315,7 +315,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ profile, isTop, onSwipe, onPr
 
   return (
     <PanGestureHandler onGestureEvent={gestureHandler} enabled={isTop}>
-      <Animated.View style={[styles.card, animatedStyle, { backgroundColor: currentTheme.colors.surface }]}>
+      <Animated.View style={[styles.card, animatedStyle]}>
         <TouchableOpacity style={styles.cardTouchable} onPress={onPress} activeOpacity={0.9}>
           <Image source={{ uri: profile.image }} style={styles.cardImage} />
           
@@ -327,24 +327,27 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ profile, isTop, onSwipe, onPr
             <Text style={styles.nopeText}>NOPE</Text>
           </Animated.View>
           
-          <View style={styles.cardOverlay}>
-            <View style={[styles.cardContent, { padding: currentTheme.spacing.lg }]}>
+          <LinearGradient
+            colors={['transparent', 'rgba(0,0,0,0.3)', 'rgba(0,0,0,0.8)']}
+            style={styles.cardOverlay}
+          >
+            <View style={styles.cardContent}>
               <View style={styles.profileInfo}>
                 <Text style={styles.name}>{profile.name}, {profile.age}</Text>
                 <Text style={styles.location}>{profile.location}</Text>
               </View>
               
-              <Text style={[styles.bio, { marginBottom: currentTheme.spacing.lg }]}>{profile.bio}</Text>
+              <Text style={styles.bio}>{profile.bio}</Text>
               
-              <View style={[styles.interests, { gap: currentTheme.spacing.sm }]}>
+              <View style={styles.interests}>
                 {profile.interests.map((interest, index) => (
-                  <View key={index} style={[styles.interestTag, { paddingHorizontal: currentTheme.spacing.md }]}>
+                  <View key={index} style={styles.interestTag}>
                     <Text style={styles.interestText}>{interest}</Text>
                   </View>
                 ))}
               </View>
             </View>
-          </View>
+          </LinearGradient>
         </TouchableOpacity>
       </Animated.View>
     </PanGestureHandler>
@@ -355,7 +358,6 @@ export default function ExploreScreen() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [profiles] = useState(mockProfiles);
   const router = useRouter();
-  const { currentTheme } = useTheme();
 
   const handleSwipe = (direction: 'left' | 'right') => {
     if (direction === 'right') {
@@ -404,7 +406,7 @@ export default function ExploreScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: currentTheme.colors.background }]}>
+    <View style={styles.container}>
       <View style={styles.cardContainer}>
         {getVisibleProfiles().reverse().map((profile, index) => (
           <ProfileCard
@@ -413,140 +415,162 @@ export default function ExploreScreen() {
             isTop={index === 0}
             onSwipe={handleSwipe}
             onPress={() => handleProfilePress(profile.id)}
-            currentTheme={currentTheme}
           />
         ))}
       </View>
 
-      <View style={[styles.actions, { backgroundColor: 'transparent' }]}>
-        <TouchableOpacity style={[styles.actionButton, styles.nopeButton, { backgroundColor: currentTheme.colors.surface }]} onPress={handleNope}>
+      <View style={styles.actions}>
+        <TouchableOpacity style={[styles.actionButton, styles.nopeButton]} onPress={handleNope}>
           <Ionicons name="close" size={30} color="#FF3B30" />
         </TouchableOpacity>
 
-        <TouchableOpacity style={[styles.actionButton, styles.superLikeButton, { backgroundColor: currentTheme.colors.surface }]} onPress={handleSuperLike}>
+        <TouchableOpacity style={[styles.actionButton, styles.superLikeButton]} onPress={handleSuperLike}>
           <Ionicons name="star" size={25} color="#007AFF" />
         </TouchableOpacity>
 
-        <TouchableOpacity style={[styles.actionButton, styles.likeButton, { backgroundColor: currentTheme.colors.surface }]} onPress={handleLike}>
+        <TouchableOpacity style={[styles.actionButton, styles.likeButton]} onPress={handleLike}>
           <Ionicons name="heart" size={30} color="#34C759" />
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#000000',
   },
   cardContainer: {
     flex: 1,
-    position: 'relative',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#000000',
   },
   card: {
     position: 'absolute',
-    width: CARD_WIDTH,
-    height: CARD_HEIGHT,
+    width: CARD_WIDTH * 0.92,
+    height: CARD_HEIGHT * 0.85,
+    borderRadius: 24,
+    overflow: 'hidden',
+    backgroundColor: '#000000',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 8,
     },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    elevation: 12,
   },
   cardImage: {
     width: '100%',
     height: '100%',
+    resizeMode: 'cover',
   },
   cardOverlay: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    paddingBottom: 120, // Space for action buttons
+    paddingBottom: 140,
+    paddingHorizontal: 24,
   },
   cardContent: {
-    // padding will be set dynamically
+    padding: 24,
   },
   profileInfo: {
-    marginBottom: 8,
+    marginBottom: 16,
   },
   name: {
-    fontSize: 32,
-    fontWeight: 'bold',
+    fontSize: 36,
+    fontWeight: '800',
     color: '#fff',
     marginBottom: 8,
-    textShadowColor: 'rgba(0,0,0,0.5)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 3,
+    textShadowColor: 'rgba(0,0,0,0.8)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
+    letterSpacing: -0.5,
   },
   location: {
     fontSize: 18,
     color: '#fff',
-    opacity: 0.9,
-    marginBottom: 16,
-    textShadowColor: 'rgba(0,0,0,0.5)',
+    opacity: 0.95,
+    marginBottom: 20,
+    textShadowColor: 'rgba(0,0,0,0.8)',
     textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
+    textShadowRadius: 3,
+    fontWeight: '500',
   },
   bio: {
     fontSize: 18,
     color: '#fff',
-    lineHeight: 24,
-    textShadowColor: 'rgba(0,0,0,0.5)',
+    lineHeight: 26,
+    textShadowColor: 'rgba(0,0,0,0.8)',
     textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
+    textShadowRadius: 3,
+    marginBottom: 24,
+    fontWeight: '400',
   },
   interests: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    // gap will be set dynamically
+    gap: 8,
   },
   interestTag: {
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    paddingVertical: 8,
-    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 24,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.3)',
-    // paddingHorizontal will be set dynamically
+    borderColor: 'rgba(255,255,255,0.2)',
+    marginBottom: 8,
   },
   interestText: {
     color: '#fff',
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: '600',
+    letterSpacing: 0.2,
   },
   likeIndicator: {
     position: 'absolute',
-    top: 100,
-    right: 30,
+    top: 120,
+    right: 40,
     transform: [{ rotate: '15deg' }],
+    backgroundColor: 'rgba(52, 199, 89, 0.1)',
+    borderRadius: 12,
+    padding: 8,
   },
   likeText: {
-    fontSize: 40,
-    fontWeight: 'bold',
+    fontSize: 32,
+    fontWeight: '900',
     color: '#34C759',
-    borderWidth: 6,
+    borderWidth: 4,
     borderColor: '#34C759',
-    paddingHorizontal: 15,
-    paddingVertical: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    textAlign: 'center',
   },
   nopeIndicator: {
     position: 'absolute',
-    top: 100,
-    left: 30,
+    top: 120,
+    left: 40,
     transform: [{ rotate: '-15deg' }],
+    backgroundColor: 'rgba(255, 59, 48, 0.1)',
+    borderRadius: 12,
+    padding: 8,
   },
   nopeText: {
-    fontSize: 40,
-    fontWeight: 'bold',
+    fontSize: 32,
+    fontWeight: '900',
     color: '#FF3B30',
-    borderWidth: 6,
+    borderWidth: 4,
     borderColor: '#FF3B30',
-    paddingHorizontal: 15,
-    paddingVertical: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    textAlign: 'center',
   },
   actions: {
     position: 'absolute',
@@ -557,33 +581,37 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingBottom: 40,
-    paddingTop: 20,
-    gap: 32,
+    paddingBottom: 50,
+    paddingTop: 30,
+    gap: 40,
+    zIndex: 10,
   },
   actionButton: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#fff',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 4,
+      height: 6,
     },
-    shadowOpacity: 0.3,
-    shadowRadius: 4.65,
-    elevation: 8,
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 10,
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.1)',
   },
   nopeButton: {
-    // backgroundColor will be set dynamically
+    backgroundColor: '#fff',
   },
   superLikeButton: {
-    // backgroundColor will be set dynamically
+    backgroundColor: '#fff',
   },
   likeButton: {
-    // backgroundColor will be set dynamically
+    backgroundColor: '#fff',
   },
   cardTouchable: {
     flex: 1,
