@@ -56,10 +56,11 @@ naseeb/
 
 ### Prerequisites
 
-- Node.js (v18 or higher)
-- npm or yarn
-- Expo CLI
-- iOS Simulator or Android Emulator (optional)
+Node.js (v18+)
+
+Expo CLI: npm install -g expo-cli
+
+Expo Go app (iOS/Android) or emulator
 
 ### Installation
 
@@ -76,20 +77,21 @@ naseeb/
 
 3. **Start the development server**
    ```bash
-   npm start
+   npx expo start
    ```
 
 4. **Run on your preferred platform**
    ```bash
-   # iOS
-   npm run ios
-   
-   # Android
-   npm run android
-   
-   # Web
-   npm run web
-   ```
+   From there, you can choose to run the app on:
+
+   iOS simulator
+
+   Android emulator
+
+   Expo Go on your physical device
+
+   Web browser
+```
 
 ## 🔐 Authentication
 
